@@ -1,17 +1,45 @@
-namespace WebApplication3;
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-public class Program
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+
+WebApplication app = builder.Build();
+
+app.MapOpenApi();
+app.UseSwaggerUI(x =>
 {
-    public static void Main(string[] args)
-    {
-        IHost host = CreateHostBuilder(args).Build();
-        host.Run();
-    }
+    x.SwaggerEndpoint("/openapi/v1.json", "My API");
+});
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-       Host.CreateDefaultBuilder(args)
-           .ConfigureWebHostDefaults(webBuilder =>
-           {
-               webBuilder.UseStartup<Startup>();
-           });
+app.UseHttpsRedirection();
+
+app.MapGet("/weatherforecast", () =>
+{
+    return Enumerable.Empty<WeatherForecast>();
+})
+.Produces<IEnumerable<WeatherForecast>>()
+.WithName("GetWeatherForecasts");
+
+app.MapPost("/weatherforecast", (WeatherForecast weatherForecast) =>
+{
+    return weatherForecast;
+})
+.Produces<WeatherForecast>()
+.WithName("CreateWeatherForecast");
+
+app.Run();
+
+public class WeatherForecast
+{
+    public LocationDto Location { get; set; }
+}
+
+public class LocationDto
+{
+    public AddressDto Address { get; set; }
+}
+
+public class AddressDto
+{
+    public LocationDto RelatedLocation { get; set; }
 }
